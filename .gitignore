@@ -1,0 +1,7 @@
+logs/models/*
+tmp.jpg
+data
+.idea/
+.ipynb_checkpoints/
+__pycache__/
+venv/
