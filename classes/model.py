@@ -137,24 +137,8 @@ class FineTuneTrainer:
         if val_loss:
             self.validation_losses.append(val_loss)
 
-    def freeze_through_block_n(self, n):
-        """
-        Due to adding GradCAM, need to use this function instead to freeze layers. Will freeze up through the specified layer (First Conv2D, followed by 4 sequentials).
-        """
-        assert 0 <= n <= 4, 'n must be between 0 and 4 inclusive'
-        count = 0
-        for i, block in enumerate(self.model.features):
-            if count > n:
-                return
-            if i not in {1, 2, 3}:
-                count += 1
-            print(f'Freezing weights for block {block._get_name()}')
-            for param in block.parameters():
-                param.requires_grad = False
-
     def freeze_first_n_trainable_layers(self, trainable_layers, n=None, freeze=True):
         """
-        DEPRECATED due to incorporating GradCAM and messing up the children (duplication).
         Uses recursion to access all layers in model. Three modes:
             1. n=None: Print/return a list of the layers based on trainable_layers that can be used to determine the point at which to start freezing/unfreezing.
             2. n=Num and freeze=True: Freeze all layers up through the layer specified (based on the index in the list returned from mode #1.
@@ -214,7 +198,7 @@ class FineTuneTrainer:
 
     def produce_predictions(self, test_loader, threshold=0.5, test=True):
         """
-
+        Creates two dfs, one with probabilities and one with deterministic classifications based on specified threshold
         :param test_loader: Loader to produce images
         :param threshold: Threshold to determine whether a class is positively identified.
         :param test: Whether the images come from test or train. Only affects the name of the images.

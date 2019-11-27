@@ -4,7 +4,6 @@ import numpy as np
 import scipy.stats as ss
 import pickle as pkl
 import matplotlib.pyplot as plt
-import pandas as pd
 import seaborn as sns
 from sklearn.metrics import multilabel_confusion_matrix, classification_report, hamming_loss, roc_curve, auc
 import warnings
@@ -24,6 +23,7 @@ def get_pretty_time(duration, num_digits=2):
 
 
 def train_val_split(csv_file, test_prop=0.25, random_state=None):
+    # Split indices stratifying by label based on the csv file that came with the data set
     labels = pd.read_csv(csv_file, index_col=0)
 
     train, val = train_test_split(labels, test_size=test_prop, random_state=random_state, stratify=labels[['epidural', 'intraparenchymal', 'subarachnoid']])
@@ -32,6 +32,7 @@ def train_val_split(csv_file, test_prop=0.25, random_state=None):
 
 
 def cramers_v(x, y):
+    # Calculate Cramers V statistic between two categorical variables
     confusion_matrix = pd.crosstab(x, y)
     chi2 = ss.chi2_contingency(confusion_matrix)[0]
     n = confusion_matrix.sum().sum()
@@ -44,16 +45,19 @@ def cramers_v(x, y):
 
 
 def get_chi2_p_value(x, y):
+    # Calculate chi-squared p-value between two categorical variables
     confusion_matrix = pd.crosstab(x, y)
     return ss.chi2_contingency(confusion_matrix)[1]
 
 
 def load_model_trainer(path):
+    # Unpickles a model_trainer object (or any object, really)
     with open(path, 'rb') as f:
         return pkl.load(f)
 
 
 def bar_plot_condition_occurrences(data):
+    # Bar plot to compare frequency of each class
     categories = list(data.iloc[:, 1:].columns.values)
     sns.set(font_scale=2)
     plt.figure(figsize=(15, 8))
@@ -73,6 +77,7 @@ def bar_plot_condition_occurrences(data):
 
 
 def bar_plot_condition_co_occurrences(data):
+    # Bar plot to compare frequency of classes for each label
     rowSums = data.iloc[:, 1:].sum(axis=1)
     multiLabel_counts = rowSums.value_counts()
     sns.set(font_scale=2)
@@ -91,7 +96,7 @@ def bar_plot_condition_co_occurrences(data):
 
 
 def build_class_weights(data):
-    # Reweights classes by their frequency so that the weights sum to num_classes
+    # Reweights classes inversely by their frequency so that the weights sum to num_classes
     epid, intra, sub = data.sum().epidural, data.sum().intraparenchymal, data.sum().subarachnoid
     total = epid + intra + sub
     epid_scalar, intra_scalar, sub_scalar = total / epid, total / intra, total / sub
@@ -101,6 +106,7 @@ def build_class_weights(data):
 
 
 def print_model_metrics(y_pred, y_true):
+    # Prints various multilabel classification statistics. Used to compare models.
     print(f'Hamming Loss: {hamming_loss(y_pred, y_true):.2%}')
 
     print('\nClassification Report')
@@ -132,6 +138,7 @@ def draw_cam(model_trainer_path, image_dataset, image_index, device='cuda:0'):
 
 
 def plot_auc(probs, labels, title, lw=2):
+    # Pretty plot drawing several ROC curves for multilabel classification
     # Compute macro-average ROC curve and ROC area
     n_classes = probs.shape[1]
 
@@ -190,5 +197,6 @@ def plot_auc(probs, labels, title, lw=2):
 
 
 def test_threshold(probs, y_true, threshold):
+    # Quickly change confidence threshold and return model metrics to quickly determine advantageous threshold
     decs = probs.iloc[:, 1:].applymap(lambda x: 1 if x > threshold else 0)
     print_model_metrics(decs, y_true)

@@ -1,4 +1,3 @@
-import numpy as np
 import os
 from torchvision import models
 import torch.nn as nn
@@ -8,9 +7,6 @@ from albumentations.pytorch import ToTensor
 import utils
 from classes.dataset import ImageDataset
 from classes.model import FineTuneTrainer
-from sklearn.metrics import multilabel_confusion_matrix, classification_report
-from sklearn.dummy import DummyClassifier
-from classes.ResNeXt import ResNeXt
 
 # Customizable inputs
 MODEL_NAME = 'MODEL_NAME_GOES_HERE'
@@ -83,11 +79,13 @@ model_trainer.train_model(train_loader=train_loader,
 
 model_trainer.save(os.path.join('logs', 'models', MODEL_NAME))
 
+# Evaluate on validation set
 val_probs, val_decs = model_trainer.produce_predictions(val_loader, test=False)
 y_pred = val_decs.iloc[:, 1:].values.astype('int64')
 y_true = val_data.labels.iloc[:, 1:].values
 utils.print_model_metrics(y_pred, y_true)
 
+# Produce test outputs
 test_data = ImageDataset(root_dir='data/wetransfer-1c7414/test_images',
                          transform=val_transform)
 test_loader = DataLoader(test_data,

@@ -6,7 +6,6 @@ import pandas as pd
 import torch
 import torchvision.utils as vutils
 import matplotlib.pyplot as plt
-import torchvision.transforms.functional as F
 import cv2
 import re
 
@@ -124,6 +123,7 @@ class ImageDataset(Dataset):
         return output_tensor
 
     def show_grid(self, label, num_examples):
+        # Displays a grid of examples with a specific label
         tensors = self.collect_examples(label=label, num_examples=num_examples)
         grid = vutils.make_grid(tensors, nrow=int(np.ceil(num_examples ** 0.5)), normalize=True)
         title_list = [col + ': ' + ('True' if label_bool else 'False') for label_bool, col in zip(label, self.labels.columns[1:])]
@@ -135,6 +135,7 @@ class ImageDataset(Dataset):
         plt.show()
 
     def show_image(self, idx):
+        # Displays a single image based on an index
         plt.figure(figsize=(10, 10))
         plt.axis('off')
         plt.imshow(np.transpose(self.__getitem__(idx)['image'], (1, 2, 0)), cmap=plt.cm.bone)
