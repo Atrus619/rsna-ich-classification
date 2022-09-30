@@ -7,7 +7,7 @@ decorator==4.4.1
 idna==2.8
 imageio==2.6.1
 imgaug==0.2.6
-joblib==0.14.0
+joblib==1.2.0
 kaggle==1.5.6
 kiwisolver==1.1.0
 matplotlib==3.1.1
